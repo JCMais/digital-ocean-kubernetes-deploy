@@ -20,6 +20,12 @@ jobs:
             docker tag $IMAGE_NAME:latest $IMAGE_NAME:$CIRCLE_SHA1
             docker push $IMAGE_NAME:latest
             docker push $IMAGE_NAME:$CIRCLE_SHA1
+  deploy:
+    docker:
+      - image: circleci/buildpack-deps:bullseye
+    working_directory: ~/app
+    steps:
+      - checkout
       - run:
           name: Install envsubst
           command: |
@@ -34,9 +40,15 @@ jobs:
           command: ./scripts/ci-deploy.sh
 workflows:
   version: 2
-  build-master:
+  build-deploy-master:
     jobs:
       - build:
+          filters:
+            branches:
+              only: master
+      - deploy:
+          requires:
+            - build
           filters:
             branches:
               only: master
